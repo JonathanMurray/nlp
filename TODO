@@ -1,0 +1,46 @@
+TODO
+
+Lägg till hantering av platser.
+
+T.ex.
+
+peter is at the cinema
+
+             S
+        NP       VP
+     NNP      VP   BeskrivningAvVP
+   peter    is      Prep       NP
+                   at        DT    NN
+                           the   cinema
+
+
+
+
+
+
+
+
+
+
+peter met a cute dog in the park.
+
+action(meet, peter, dog), property(dog, cute).
+
+====>
+
+action(1, meet).
+property(dog, cute)
+actor(1, peter).
+receiver(1, dog).
+location(1, park).
+time(1, past).
+
+
+
+
+when did peter meet a dog?
+====>
+action(X, meet), actor(X, peter), receiver(X, dog), time(X, When).
+Answer: When = "past"
+
+
