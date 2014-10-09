@@ -17,6 +17,7 @@ base_sentence(X, sentence) --> np_(NP), vp_(VP), {X = s(NP, VP)}.
 base_sentence(X, question) --> np_(NP), vp_(VP), {X = s(NP, VP)}.
 base_sentence(X, question) --> aux_(Aux), np_(NP), vp_(VP), {X = s(aux(Aux), NP, VP)}.
 base_sentence(X, question) --> wh_(Wh), aux_(Aux), np_(NP), vp_(VP), {X = s(wh(Wh), aux(Aux), NP, VP)}.
+base_sentence(X, question) --> wh_(Wh), vp_(VP), {X = s(wh(Wh), VP)}.
 
 %---------------------------------------------
 %               NOUN PHRASE
@@ -25,7 +26,6 @@ base_sentence(X, question) --> wh_(Wh), aux_(Aux), np_(NP), vp_(VP), {X = s(wh(W
 np_(X) --> np_base(X).
 np_(X) --> np_base(NP1), [and], np_base(NP2), {X = np(NP1, cc(and), NP2)}.
 np_(X) --> np_base(NP), pp_(PP), {X = np(NP, PP)}.
-np_(X) --> np_base(NP1), [s], np_(NP2), {X = np(NP1, s, NP2)}.
 np_(X) --> np_base(NP1), [s], np_(NP2), {X = np(NP1, s, NP2)}.
 
 np_base(X) --> dt_(DT), !, nn_(NN), {X = np(DT, NN)}.

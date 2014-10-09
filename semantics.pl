@@ -29,6 +29,9 @@ parse_syntax_tree(s(wh(where), aux(_Aux), NP, VP), [location(ActionID, _Unknown)
 	parse_vp(VP, Subject, SemanticsVP, ActionID),
 	append(SideEffects, SemanticsVP, Semantics).
 
+parse_syntax_tree(s(wh(_Wh), VP), Semantics, true):-
+	parse_vp(VP, _UnknownSubject, Semantics, _ActionID).
+
 
 
 parse_syntax_tree(question(S), Semantics, true):-
