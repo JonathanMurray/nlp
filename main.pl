@@ -1,6 +1,7 @@
 %
-%		README
-%		
+%		INSTRUCTIONS
+%		------------
+%
 %		Start by calling main, in any of the following ways:
 %
 %		1. "main."
@@ -10,26 +11,23 @@
 %
 %		The arguments given determines what output the program will give.
 %
+%		-------------------------------------------------------------
 %
-%
-%
-%
-%	
 %		Then write statements or questions like:
 %
 %		1. peter has a cat
 %		2. lisa s cat is called johny			(the s in "lisa's" must be separated like so)
 %		3. where did peter meet lisa?
 %
-%
+%		-------------------------------------------------------------
 %
 %		You can also write "list" to have all stored facts printed
 %
-%
+%		-------------------------------------------------------------
 %
 %		To clear the facts, prolog must be restarted.
-
-
+%
+%		-------------------------------------------------------------
 
 
 
@@ -44,6 +42,8 @@
 % SHORTCUTS
 a:- consult(main), consult(write_predicates), consult(grammar), consult(semantics), consult(mylists).
 
+
+% facts used to represent the knowledge of the system
 :- 
 	dynamic property/2, 
 	possess/2,
@@ -56,13 +56,16 @@ a:- consult(main), consult(write_predicates), consult(grammar), consult(semantic
 
 %% be(X, X). %common sense
 
-
+% used when printing stored facts
 stored_fact(called(A, B)):- clause(called(A, B), _).
 stored_fact(be(A, B)):- clause(be(A, B), _).
 stored_fact(location(A, B)):- clause(location(A,B), _).
 stored_fact(action(A, B)):- clause(action(A, B), _).
 stored_fact(actor(A, B)):- clause(actor(A, B), _).
 stored_fact(receiver(A, B)):- clause(receiver(A, B), _).
+
+
+
 
 main:- main([semantics]).
 
@@ -108,18 +111,18 @@ parse_input(Words, Flags):-
 	write_output(SyntaxTrees, SemanticsLists, Flags),
 	!,
 	(
-		NumTrees == 1,
+		NumTrees > 0,
 		!,
-		SemanticsLists = [FirstSemantics | _ ],
-		IsQuestionLists = [FirstIsQuestion | _ ],
-		QueriedVarsLists = [FirstQueriedVars | _],
-		process_semantics(FirstSemantics, FirstIsQuestion, FirstQueriedVars)
-	;
-		NumTrees > 1,
-		write("Choose interpretation. Write a number!"), nl,nl,
-		read_until_input_number_between(Number, 1, NumTrees),
-		!,
-		Index is Number - 1,
+		(
+			NumTrees == 1,
+			Index = 0
+		;
+			NumTrees > 1,
+			write("Choose interpretation. Write a number!"), nl,nl,
+			read_until_input_number_between(Number, 1, NumTrees),
+			!,
+			Index is Number - 1
+		),
 		nth0(Index, SemanticsLists, Semantics),
 		nth0(Index, IsQuestionLists, IsQuestion),
 		nth0(Index, QueriedVarsLists, QueriedVars),
