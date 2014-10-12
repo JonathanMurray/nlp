@@ -267,6 +267,3 @@ parse_pp(pp(wh(where)), EntityWithLocation, [location(EntityWithLocation, Querie
 
 
 being_verb(be).
-
-%% parse_pp(pp(prep(with), NP), EntityWithPossession, [possess(EntityWithPossession, SemanticID) | SideEffects], []):-
-%% 	parse_np(NP, SemanticID, SideEffects, []).

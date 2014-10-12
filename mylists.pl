@@ -1,16 +1,4 @@
-:- module(mylists, [delete_ground/3, replace_in_term/4, take_n/3]).
-
-delete_ground([H|T], Element, NewT):-
-	ground(H),
-	Element = H, 
-	!,
-	delete_ground(T, Element, NewT).
-
-delete_ground([H|T], Element, [H|NewT]):-
-	!,
-	delete_ground(T, Element, NewT).
-
-delete_ground([], _, []).
+:- module(mylists, [replace_in_term/4, take_n/3]).
 
 replace_in_term(Occurrence, Input, Replacement, Result):-
 	term_to_atom(Input, InputAtom),

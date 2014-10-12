@@ -1,8 +1,7 @@
 :- module(grammar, [parse_sentence/2]).
 
-% Based on Penn treebank
-% X-argument is the semantic meaning of the input
 
+% X-argument is the semantic meaning of the input
 
 
 parse_sentence(SentenceWords, SyntaxTree):-
@@ -34,6 +33,8 @@ base_sentence(X) --> pp_(PP, query), aux_(Aux), np_(NP, bound), vp_(VP, _VPType)
 base_sentence(X) --> pp_(PP, query), verb_(be, _), np_(NP, bound), {X = s(PP, vp(verb(be)), NP)}.
 
 
+
+
 %---------------------------------------------
 %               NOUN PHRASE
 %---------------------------------------------
@@ -41,7 +42,6 @@ base_sentence(X) --> pp_(PP, query), verb_(be, _), np_(NP, bound), {X = s(PP, vp
 % Types:
 % bound: points at something specific, for instance "peter"
 % query: this np has some unbound variables that want to be assigned, for instance "who", or "who's dog"
-% universal: this np 
 
 np_(X, Type) --> np_base(X, Type).
 np_(X, bound) --> np_base(NP1, bound), [and], np_base(NP2, bound), {X = np(NP1, cc(and), NP2)}.
@@ -65,6 +65,8 @@ nnp_(X) --> proper_noun_(NNP), {X = nnp(NNP)}.
 
 
 
+
+
 %---------------------------------------------
 %               VERB PHRASE
 %---------------------------------------------
@@ -84,13 +86,16 @@ vp_base(X, intrans) --> verb_(be, _), adjective_(Adj), {X = vp(verb(be), adj(Adj
 vp_base(X, trans) --> verb_(be, _), verb_(call, passive), nnp_(NNP), {X = vp(verb(be), verb(call), NNP)}.
 
 
+
+
+
 %---------------------------------------------
 %               PREPOSITION PHRASE
 %---------------------------------------------
 
 % Types:
-% bound
-% query
+% bound: for example "in the park"
+% query: for example "where"
 
 pp_(X, Type) --> pp_base(X, Type).
 pp_(X, Type) --> pp_base(PP, bound), pp_(PP2, Type), {X = pp(PP, PP2)}.
@@ -98,6 +103,10 @@ pp_(X, query) --> pp_base(PP, query), pp_(PP2, bound), {X = pp(PP, PP2)}.
 
 pp_base(X, query) --> wh_pp(Wh), {X = pp(wh(Wh))}.
 pp_base(X, Type) --> prep_(Prep), np_(NP, Type), {X = pp(prep(Prep), NP)}.
+
+
+
+
 
 
 %---------------------------------------------
@@ -148,7 +157,6 @@ pronoun_(we) --> [we].
 pronoun_(it) --> [it].
 
 prep_(at) --> [at];[in];[on];[by].
-prep_(with) --> [with].
 
 
 cc_(and) --> [and].

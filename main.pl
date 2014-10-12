@@ -88,6 +88,15 @@ main_loop(Flags):-
 	!,
 	main_loop(Flags).
 
+read_input_words(Words):-
+	write_yellow_bold(" > "),
+	read_line_to_codes(user_input, Codes),
+	insert_space_before_punctuation(Codes, FormattedCodes),
+	!, 
+	atom_codes(Input, FormattedCodes),
+	atomic_list_concat(UnformattedWords, " ", Input),
+	delete(UnformattedWords, '', Words).
+
 handle_bye_input([bye|_]):- !, fail.
 handle_bye_input(_):- !.
 
@@ -136,6 +145,7 @@ parse_input(Words, Flags):-
 	),
 	!.
 
+% read input from the user until a number between the arguments is supplied
 read_until_input_number_between(Number, MinIncl, MaxIncl):-
 	read_line_to_codes(user_input, [NumberCode]),
 	Number is NumberCode - 48, %From ascii to number
@@ -144,7 +154,12 @@ read_until_input_number_between(Number, MinIncl, MaxIncl):-
 	;
 	read_input_number(Number, MinIncl, MaxIncl). % Try until success
 
-% no semantics to parse, doesn't matter if it's a question or statement
+
+% process_semantics(+ListOfFacts, +IsQuestion, +QueriedVars)
+% ListOfFacts contains facts derived from the user input. 
+% IsQuestion tells if the user input was a question (rather than a statement)
+% QueriedVars is a list of the variables that the question asks about 
+
 process_semantics([], _, _QueriedVars):-
 	write_cyan_bold("     Sorry, no semantics generated from syntax tree!"),
 	nl, nl.
@@ -187,16 +202,16 @@ not_already_known(_):-
 	true.
 
 answer_question(Queries, QueriedVars):-
-	write("Queried vars:   "), write(QueriedVars), nl,nl,
+	%% write("Queried vars:   "), write(QueriedVars), nl,nl,
 	has_positive_answer(Queries),
 	!,
 	(
 		maplist(call, Queries),
 		(
-			length(QueriedVars, 0),
+			length(QueriedVars, 0), % it's a yes/no-question
 			write_cyan_bold("     Yes!")
 		;
-			maplist(explain, QueriedVars, Explanations),
+			maplist(explain, QueriedVars, Explanations), % "explain" the answers
 			nl, write_list(Explanations), 
 			fail
 		)
@@ -206,13 +221,18 @@ answer_question(Queries, QueriedVars):-
 	!.
 
 answer_question(_, _):-
-	!,
+	!, %there was no positive answer to the question
 	write_cyan_bold("     I can't say for sure!").
 
 has_positive_answer(Queries):-
 	copy_term(Queries, QueriesCopy),
 	maplist(call, QueriesCopy).
 
+% explain(+X, -Explanation)
+% "explains" the term X, using stored knowledge about it.
+% If X has a name this is given as an answer,
+% another possibility is that X is property of some other entity.
+% Explanation might be "peter", or "lisas dog" etc.
 
 explain(X, Name):-
 	called(X, Name),
@@ -243,6 +263,14 @@ generated_atom(Atom):-
 	atom_codes(Atom, [LowerCaseX | _]).
 	
 
+% replace_args_with_known_entities(+Semantic, +AllSemantics, -NewSemantics)
+%
+% Replace arguments of Semantic with other existing entities if they represent
+% the same entity.
+% Semantic - a fact, for instance "be(xG1353, human)"
+% AllSemantics - all facts derived from the input, for instance [called(xG1353, peter), be(xG1353, human)]
+% NewSemantic - a new fact, for instance "be(xG1205, human)"
+
 replace_args_with_known_entities(Semantic, AllSemantics, NewSemantic):-
 	arg(1, Semantic, Arg1),
 	arg(2, Semantic, Arg2),
@@ -269,6 +297,12 @@ replace_underscore(Input, Result):-
 	Underscore = 95,
 	LowerCaseX = 120,
 	replace_in_term(Underscore, Input, LowerCaseX, Result).
+
+
+
+
+
+
 
 write_output(SyntaxTrees, SemanticsLists, Flags):-
 	write_output(SyntaxTrees, SemanticsLists, Flags, 1).
@@ -302,14 +336,10 @@ write_syntax_and_semantics(_, _, Flags):-
 	!,
 	fail.	
 
-read_input_words(Words):-
-	write_yellow_bold(" > "),
-	read_line_to_codes(user_input, Codes),
-	insert_space_before_punctuation(Codes, FormattedCodes),
-	!, 
-	atom_codes(Input, FormattedCodes),
-	atomic_list_concat(UnformattedWords, " ", Input),
-	delete(UnformattedWords, '', Words).
+
+
+
+
 
 
 generate_syntax_trees(Words, SyntaxTrees):-
