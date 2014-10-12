@@ -1,17 +1,8 @@
-TODO
+1.
 
-Lägg till hantering av platser.
+% merge(+VP, +NPObj, -NewVP)
 
-T.ex.
-
-peter is at the cinema
-
-             S
-        NP       VP
-     NNP      VP   BeskrivningAvVP
-   peter    is      Prep       NP
-                   at        DT    NN
-                           the   cinema
+Add more cases. only intrans (without PP or anything) supported atm...
 
 
 
@@ -19,28 +10,13 @@ peter is at the cinema
 
 
 
-
-
-
-peter met a cute dog in the park.
-
-action(meet, peter, dog), property(dog, cute).
-
-====>
-
-action(1, meet).
-property(dog, cute)
-actor(1, peter).
-receiver(1, dog).
-location(1, park).
-time(1, past).
+2.
+Handle the fact that some verbs are reflective
+"peter meets lisa" ===>  "lisa meets peter" !
 
 
 
 
-when did peter meet a dog?
-====>
-action(X, meet), actor(X, peter), receiver(X, dog), time(X, When).
-Answer: When = "past"
 
 
+3.

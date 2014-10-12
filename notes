@@ -20,8 +20,61 @@ s
 
 S(
 	[-, 
-	
+	NP(
+
+	)
 	]
 
 
 )
+
+
+
+
+a 		is in b
+who		
+what	
+
+a's 	dog is in b
+who's 	
+
+a laughs now
+when does a laugh
+
+a met b				NP+		Verb 	NP+
+who did a meet		NP- 	Aux 	NP+ 	Verb
+who met b			NP- 	Verb 	NP+ 
+
+
+
+
+tricky ones:
+
+who did a meet?    (a met who)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

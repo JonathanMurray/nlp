@@ -1,4 +1,4 @@
-:- module(write_predicates, [write_list/1, write2/1, nl2/0, write_compound/1, write_cyan_bold/1, write_vars/1]).
+:- module(write_predicates, [write_list/1, write2/1, nl2/0, write_compound/1, write_cyan_bold/1, write_yellow_bold/1, write_vars/1]).
 
 write_list(List):- write_list(List, 0), !.
 
@@ -72,6 +72,9 @@ nl2:- not(debug_enabled), !.
 write_cyan_bold(Term):-
 	ansi_format([fg(cyan), bold], '~w', [Term]).
 
+
+write_yellow_bold(Term):-
+	ansi_format([fg(yellow), bold], '~w', [Term]).
 
 write_vars(Compound):-
 	compound(Compound),

@@ -1,3 +1,41 @@
+%
+%		README
+%		
+%		Start by calling main, in any of the following ways:
+%
+%		1. "main."
+%		2. "main([semantics])."
+%		3. "main([syntax])."
+%		4. "main([])."
+%
+%		The arguments given determines what output the program will give.
+%
+%
+%
+%
+%
+%	
+%		Then write statements or questions like:
+%
+%		1. peter has a cat
+%		2. lisa s cat is called johny			(the s in "lisa's" must be separated like so)
+%		3. where did peter meet lisa?
+%
+%
+%
+%		You can also write "list" to have all stored facts printed
+%
+%
+%
+%		To clear the facts, prolog must be restarted.
+
+
+
+
+
+
+
+
 :- use_module(write_predicates).
 :- use_module(grammar).
 :- use_module(semantics).
@@ -13,14 +51,25 @@ a:- consult(main), consult(write_predicates), consult(grammar), consult(semantic
 	actor/2,
 	receiver/2,
 	be/2,
-	location/2.
+	location/2,
+	called/2.
 
-uninteresting_var(X):- action(X, _).
-uninteresting_var(X):- actor(X, _).
-uninteresting_var(X):- receiver(X, _).
+%% be(X, X). %common sense
 
-main:- main([]).
 
+stored_fact(called(A, B)):- clause(called(A, B), _).
+stored_fact(be(A, B)):- clause(be(A, B), _).
+stored_fact(location(A, B)):- clause(location(A,B), _).
+stored_fact(action(A, B)):- clause(action(A, B), _).
+stored_fact(actor(A, B)):- clause(actor(A, B), _).
+stored_fact(receiver(A, B)):- clause(receiver(A, B), _).
+
+main:- main([semantics]).
+
+% Flags:
+% 1. [semantics]
+% 2. [syntax]
+% 3. []
 main(Flags):-
 	main_loop(Flags).
 
@@ -28,12 +77,29 @@ main_loop(Flags):-
 	read_input_words(Words),
 	!,
 	handle_bye_input(Words),
+	(
+		handle_list_facts(Words)
+	;
+		parse_input(Words, Flags)
+	),
+	!,
+	main_loop(Flags).
+
+handle_bye_input([bye|_]):- !, fail.
+handle_bye_input(_):- !.
+
+%if user writes "list", print all facts, otherwise fail.
+handle_list_facts([list]):-
+	findall(Fact, stored_fact(Fact), Facts),
+	write_list(Facts), nl.
+
+parse_input(Words, Flags):-
 	write("parsing input..."), 
 	generate_syntax_trees(Words, SyntaxTrees),
 	write("  [X]"), nl, 
 	write("parsing syntax trees..."),
 	!,
-	maplist(parse_syntax_tree, SyntaxTrees, SemanticsLists, IsQuestionLists),
+	maplist(parse_syntax_tree, SyntaxTrees, SemanticsLists, IsQuestionLists, QueriedVarsLists),
 	write("  [X]"), nl,
 	!,
 	length(SyntaxTrees, NumTrees),
@@ -43,10 +109,11 @@ main_loop(Flags):-
 	!,
 	(
 		NumTrees == 1,
+		!,
 		SemanticsLists = [FirstSemantics | _ ],
 		IsQuestionLists = [FirstIsQuestion | _ ],
-		process_semantics(FirstSemantics, FirstIsQuestion),
-		!
+		QueriedVarsLists = [FirstQueriedVars | _],
+		process_semantics(FirstSemantics, FirstIsQuestion, FirstQueriedVars)
 	;
 		NumTrees > 1,
 		write("Choose interpretation. Write a number!"), nl,nl,
@@ -55,18 +122,16 @@ main_loop(Flags):-
 		Index is Number - 1,
 		nth0(Index, SemanticsLists, Semantics),
 		nth0(Index, IsQuestionLists, IsQuestion),
-		process_semantics(Semantics, IsQuestion),
+		nth0(Index, QueriedVarsLists, QueriedVars),
+		process_semantics(Semantics, IsQuestion, QueriedVars),
 		!
 	;
+		NumTrees == 0,
 		!,
 		write_cyan_bold("     Could not parse the input. Try again!"),
 		nl, nl
 	),
-	!,
-	main_loop(Flags).
-
-handle_bye_input([bye|_]):- !, fail.
-handle_bye_input(_):- !.
+	!.
 
 read_until_input_number_between(Number, MinIncl, MaxIncl):-
 	read_line_to_codes(user_input, [NumberCode]),
@@ -74,46 +139,62 @@ read_until_input_number_between(Number, MinIncl, MaxIncl):-
 	Number >= MinIncl,
 	Number =< MaxIncl
 	;
-	read_input_number(Number). % Try until success
+	read_input_number(Number, MinIncl, MaxIncl). % Try until success
 
+% no semantics to parse, doesn't matter if it's a question or statement
+process_semantics([], _, _QueriedVars):-
+	write_cyan_bold("     Sorry, no semantics generated from syntax tree!"),
+	nl, nl.
 
-process_semantics(Semantics, false):-
-	(not_already_known(Semantics) ->
-		maplist(replace_underscore, Semantics, FormattedFacts),
-		maplist(assert, FormattedFacts),
-		write_cyan_bold("     Roger that!")
-	;	
+process_semantics(Semantics, false, _QueriedVars):-
+	(
+		not_already_known(Semantics),
+		maplist(replace_underscore, Semantics, Tmp),
+		length(Tmp, NumSemantics),
+		take_n(Tmp, NumSemantics, DuplicatedSemantics),
+		maplist(replace_args_with_known_entities, Tmp, DuplicatedSemantics, FormattedFacts),
+		maplist(assert_if_new, FormattedFacts, Output),
+		write_cyan_bold("     Roger that!"), nl,
+		nl, write("Asserting: "), write_list(Output)
+	;
+		write_cyan_bold("     I already know that!"),	
 		true
 	),
 	nl, nl.
 
-process_semantics(Semantics, true):-
-	answer_question(Semantics),
+process_semantics(Semantics, true, QueriedVars):-
+	answer_question(Semantics, QueriedVars),
 	nl, nl.
+
+assert_if_new(Fact, Fact):-
+	not_already_known([Fact]),
+	!,
+	assert(Fact).
+
+assert_if_new(_, ""):-
+	!.
 
 not_already_known(Semantics):-
 	maplist(call, Semantics),
 	!,
-	write_cyan_bold("     I already know that!"),
 	fail.
 
 not_already_known(_):-
 	!, 
 	true.
 
-answer_question(Queries):-
-	%% write_list(Queries),
-	question_vars(Queries, QuestionVars),
+answer_question(Queries, QueriedVars):-
+	write("Queried vars:   "), write(QueriedVars), nl,nl,
 	has_positive_answer(Queries),
 	!,
 	(
 		maplist(call, Queries),
-		exclude(uninteresting_var, QuestionVars, InterestingQuestionVars),
 		(
-			length(InterestingQuestionVars, 0),
+			length(QueriedVars, 0),
 			write_cyan_bold("     Yes!")
 		;
-			write("     "), write_cyan_bold(InterestingQuestionVars),
+			maplist(explain, QueriedVars, Explanations),
+			nl, write_list(Explanations), 
 			fail
 		)
 	;
@@ -121,7 +202,7 @@ answer_question(Queries):-
 	),
 	!.
 
-answer_question(_):-
+answer_question(_, _):-
 	!,
 	write_cyan_bold("     I can't say for sure!").
 
@@ -130,34 +211,61 @@ has_positive_answer(Queries):-
 	maplist(call, QueriesCopy).
 
 
-question_vars(Queries, QuestionVars):-
-	maplist(nonground_entities, Queries, ListOfNongroundLists),
-	flatten(ListOfNongroundLists, NongroundsWithDuplicates),
-	list_to_set(NongroundsWithDuplicates, QuestionVars).
+explain(X, Name):-
+	called(X, Name),
+	!.
+
+explain(X, Explanation):-
+	action(Action, possess),
+	receiver(Action, X),
+	actor(Action, Possesser),
+	explain(Possesser, PossesserExplanation),
+	be(X, Possession),
+	X \= Possession,
+	string_concat(PossesserExplanation, "s ", Possessers),
+	string_concat(Possessers, Possession, Explanation),
+	!.
+
+explain(X, Explanation):-
+	be(X, WhatXIs),
+	X \= WhatXIs,
+	explain(WhatXIs, Explanation),
+	!.
+
+explain(X, X):-
+	not(generated_atom(X)).
+
+generated_atom(Atom):-
+	LowerCaseX = 120,
+	atom_codes(Atom, [LowerCaseX | _]).
 	
 
-	
-nonground_entities(Query, Nongrounds):-
-	functor(Query, _Name, NumArgs),
-	collect_args(NumArgs, Query, [], Args),
-	include(not_ground, Args, Nongrounds).
+replace_args_with_known_entities(Semantic, AllSemantics, NewSemantic):-
+	arg(1, Semantic, Arg1),
+	arg(2, Semantic, Arg2),
+	replace_arg_with_known_entity(Arg1, AllSemantics, NewArg1),
+	replace_arg_with_known_entity(Arg2, AllSemantics, NewArg2),
+	functor(Semantic, FactName, 2),
+	functor(NewSemantic, FactName, 2),
+	arg(1, NewSemantic, NewArg1),
+	arg(2, NewSemantic, NewArg2).
 
+replace_arg_with_known_entity(Arg, AllSemantics, KnownEntity):-
+	member(called(Arg, Name), AllSemantics),
+	%% called(Arg, Name),
+	called(KnownEntity, Name),
+	KnownEntity \= Arg,
+	!.
 
-collect_args(ArgNum, Term, Acc, Args):-
-	ArgNum > 0,
-	arg(ArgNum, Term, CurrentArg),
-	ArgNumMinus1 is ArgNum - 1,
-	collect_args(ArgNumMinus1, Term, [CurrentArg|Acc], Args).
+replace_arg_with_known_entity(Arg, _, Arg):-
+	!.
 
-collect_args(0, _, Acc, Acc).
-
-not_ground(X):- not(ground(X)).
 
 
 replace_underscore(Input, Result):-
 	Underscore = 95,
 	LowerCaseX = 120,
-	replace(Underscore, Input, LowerCaseX, Result).
+	replace_in_term(Underscore, Input, LowerCaseX, Result).
 
 write_output(SyntaxTrees, SemanticsLists, Flags):-
 	write_output(SyntaxTrees, SemanticsLists, Flags, 1).
@@ -184,9 +292,15 @@ write_syntax_and_semantics(SyntaxTree, _Semantics, [syntax]):-
 
 write_syntax_and_semantics(_SyntaxTree, Semantics, [semantics]):-
 	!,
-	write("Semantics: "), nl, write_list(Semantics), nl.	
+	write("Semantics: "), nl, write_list(Semantics), nl.
+
+write_syntax_and_semantics(_, _, Flags):-
+	write("Writing failed! Flags: "), write(Flags),
+	!,
+	fail.	
 
 read_input_words(Words):-
+	write_yellow_bold(" > "),
 	read_line_to_codes(user_input, Codes),
 	insert_space_before_punctuation(Codes, FormattedCodes),
 	!, 
