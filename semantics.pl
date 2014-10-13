@@ -1,13 +1,15 @@
 :- module(semantics, [parse_syntax_tree/4]).
 
 
-% parse_syntax_tree(+Syntax, -Semantics, -IsQuestion)
+% parse_syntax_tree(+Syntax, -Semantics, -IsQuestion, -Queried)
 %
 %	Parse syntax_tree (that represents a sentence) 
 %	and produce the semantic meaning. The meaning is
 %	a list of relations (facts).
 % 	The value of IsQuestion shows if the given sentence
 %	is a question (rather than a statement).
+%	Queried is a list containing the variables that the
+%	user wants assigned (if he/she gave a question)
 
 parse_syntax_tree(s(NP, VP), Semantics, false, Queried):-
 	parse_np(NP, Subject, SideEffects, Queried1),

@@ -45,7 +45,8 @@ a:- consult(main), consult(write_predicates), consult(grammar), consult(semantic
 
 % facts used to represent the knowledge of the system
 :- 
-	dynamic property/2, 
+	dynamic 
+	property/2, 
 	possess/2,
 	action/2,
 	actor/2,
