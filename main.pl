@@ -68,6 +68,10 @@ stored_fact(receiver(A, B)):- clause(receiver(A, B), _).
 
 
 
+
+
+
+
 main:- main([semantics]).
 
 % Flags:
@@ -80,14 +84,18 @@ main(Flags):-
 main_loop(Flags):-
 	read_input_words(Words),
 	!,
+	handle_input(Words, Flags),
+	!,
+	main_loop(Flags).
+
+handle_input(Words, Flags):-
 	handle_bye_input(Words),
 	(
 		handle_list_facts(Words)
 	;
 		parse_input(Words, Flags)
 	),
-	!,
-	main_loop(Flags).
+	!.
 
 read_input_words(Words):-
 	write_yellow_bold(" > "),
