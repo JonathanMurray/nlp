@@ -9,15 +9,23 @@ the code.
 
 Example of a user session:
 
-> peter met lisa s dog in the park
-> who did peter meet?
-- lisas dog
-> who met a dog?
-- peter
-> did peter meet lisa s dog in the park?
-- yes
-> what does lisa have?
-- dog
+\>  peter met lisa s dog in the park
+  
+\> who did peter meet?
+
+  lisas dog
+  
+\> who met a dog?
+
+  peter
+  
+\> did peter meet lisa s dog in the park?
+
+  yes
+  
+\> what does lisa have?
+
+  dog
 
 
 
