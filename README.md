@@ -35,6 +35,8 @@ Project structure:
 =================
 
 syntax.pl: Input parsing, and generation of syntax-trees
+
 semantics.pl: Parsing of syntax tree and generation of Prolog facts
+
 main.pl: overall structure of the program, main-loop
 
