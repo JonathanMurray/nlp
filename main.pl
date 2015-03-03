@@ -78,6 +78,7 @@ main:- main([semantics]).
 % 1. [semantics]
 % 2. [syntax]
 % 3. []
+% 4. [non_interactive]
 main(Flags):-
 	main_loop(Flags).
 
@@ -132,7 +133,7 @@ parse_input(Words, Flags):-
 		NumTrees > 0,
 		!,
 		(
-			NumTrees == 1,
+			(NumTrees == 1; Flags == [non_interactive]),
 			Index = 0
 		;
 			NumTrees > 1,
@@ -326,6 +327,9 @@ write_output([SyntaxTree | RestOfTrees], [Semantics | RestOfSemantics], Flags, T
 write_output([], [], _, _):-
 	write_cyan_bold(" -----------------------------------------"),
 	nl, nl.
+
+write_syntax_and_semantics(SyntaxTree, Semantics, [non_interactive]):- % non-interactive mode prints both syntax and semantics
+	write_syntax_and_semantics(SyntaxTree, Semantics, []).
 
 write_syntax_and_semantics(SyntaxTree, Semantics, []):-
 	!,
